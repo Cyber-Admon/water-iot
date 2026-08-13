@@ -8,8 +8,9 @@ services:
       POSTGRES_PASSWORD: water_pass
       POSTGRES_DB: water_monitor
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
+
       - water_monitor_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U water_user -d water_monitor"]
@@ -25,7 +26,7 @@ services:
     environment:
       DATABASE_URL: postgresql://water_user:water_pass@db:5432/water_monitor
     ports:
-      - "8000:8000"
+      - "8002:8000"
     volumes:
       - ./backend:/app
     depends_on:
