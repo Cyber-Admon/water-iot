@@ -10,7 +10,7 @@ import random
 import time
 import requests
 
-SERVER_URL = "http://localhost:8000/api/readings"
+SERVER_URL = "http://localhost:8002/api/readings"
 NODE_ID = "node-01"
 SEND_INTERVAL_SECONDS = 10  # shorter than 60s for faster local testing
 
