@@ -150,3 +150,26 @@ def transmission_reliability(node_id: str, expected_interval_seconds: int = 60, 
         "expected_readings": expected_count,
         "reliability_percent": min(reliability_percent, 100.0),
     }
+
+@app.get("/api/classify/{node_id}")
+def classify_node(node_id: str, db: Session = Depends(get_db)):
+    reading = (
+        db.query(models.Reading)
+        .filter(models.Reading.node_id == node_id)
+        .order_by(desc(models.Reading.received_at), desc(models.Reading.id))
+        .first()
+    )
+    if not reading:
+        raise HTTPException(status_code=404, detail="No readings found for this node.")
+
+    result = thresholds.classify_usability(
+        reading.turbidity_status, reading.ph_status, reading.tds_status
+    )
+
+    return {
+        "node_id": node_id,
+        "usability_class": result["usability_class"],
+        "guidance": result["guidance"],
+        "based_on_reading_id": reading.id,
+        "received_at": reading.received_at,
+    }

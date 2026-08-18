@@ -75,3 +75,49 @@ def build_alerts(node_id: str, turbidity_status, ph_status, tds_status,
         })
 
     return alerts
+
+
+def classify_usability(turbidity_status: str, ph_status: str, tds_status: str) -> dict:
+    """
+    Combines the three per-parameter WHO-threshold statuses into an
+    overall usability classification. Rule-based, using the exact
+    same thresholds already validating each parameter individually,
+    so there's one consistent source of truth across the system.
+    """
+    statuses = [s for s in [turbidity_status, ph_status, tds_status] if s is not None]
+
+    if not statuses:
+        return {
+            "usability_class": "Unknown",
+            "guidance": "Insufficient sensor data to determine usability."
+        }
+
+    danger_count = statuses.count("danger")
+    warning_count = statuses.count("warning")
+
+    # pH danger specifically makes water unsafe even for irrigation,
+    # since extreme pH harms soil and crops, not just human consumption
+    ph_is_danger = ph_status == "danger"
+
+    if danger_count == 0 and warning_count == 0:
+        return {
+            "usability_class": "Potable",
+            "guidance": "Water quality meets WHO-referenced safe thresholds across all measured parameters. Suitable for drinking and domestic use."
+        }
+
+    if danger_count == 0 and warning_count > 0:
+        return {
+            "usability_class": "Treatment Recommended",
+            "guidance": "One or more parameters are outside ideal safe range but not at dangerous levels. Basic treatment (filtration/boiling) recommended before drinking."
+        }
+
+    if danger_count >= 1 and not ph_is_danger:
+        return {
+            "usability_class": "Irrigation Only",
+            "guidance": "Water is unsafe for drinking due to elevated contamination levels, but may be usable for irrigation or non-potable purposes. Not recommended for human consumption."
+        }
+
+    return {
+        "usability_class": "Unsafe for All Use",
+        "guidance": "Water quality is significantly outside safe thresholds, including pH extremes. Not recommended for drinking, irrigation, or general use without treatment."
+    }
