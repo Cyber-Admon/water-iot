@@ -37,4 +37,9 @@ export const getNodes = async () => {
   return response.data;
 };
 
+export const getClassification = async (nodeId) => {
+  const response = await api.get(`/api/classify/${nodeId}`);
+  return response.data;
+};
+
 export default api;
