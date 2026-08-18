@@ -6,6 +6,9 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 const api = axios.create({
   baseURL: API_BASE_URL,
   timeout: 5000,
+  headers: {
+    "ngrok-skip-browser-warning": "true",
+  },
 });
 
 // Each function here maps to one backend endpoint.
